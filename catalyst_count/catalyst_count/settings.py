@@ -47,7 +47,12 @@ INSTALLED_APPS = [
     'allauth', #third party authentication allauth ko use karne k liye
     'allauth.account', # same as above line
     'uploader.apps.UploaderConfig', # app banaya gaya uploader k naam se
-]
+    'rest_framework', #django k rest framework ko use karne k liye
+    'count_api.apps.CountApiConfig', #count_api app banaya gaya 
+    'query_builder.apps.QueryBuilderConfig', #query build k naam se app banaya gaya
+
+
+]   
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

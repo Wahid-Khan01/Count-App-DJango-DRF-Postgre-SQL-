@@ -1,0 +1,52 @@
+{% extends 'query_builder_temp/base.html' %}
+{% load static %}
+
+    {% block title %}
+    Catalyst Query Form
+    {% endblock title %}
+
+   {% block css %}
+    
+    <style>
+        /* Add custom styles here */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+    </style>
+   {% endblock css %}
+{% block content %}
+    
+<div class="container">
+    <h1>Query Builder</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="industry">Industry:</label>
+            <input type="text" id="industry" name="industry" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="locality">Locality:</label>
+            <input type="text" id="locality" name="locality" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="country">Country:</label>
+            <input type="text" id="country" name="country" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="year_founded">Year Founded:</label>
+            <input type="text" id="year_founded" name="year_founded" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    {% if count is not none %}
+        <p>Total: {{ count }} records found for the query</p>
+    {% endif %}
+</div>
+{% endblock content %}
+
+

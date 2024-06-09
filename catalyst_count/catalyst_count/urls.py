@@ -10,6 +10,8 @@ urlpatterns = [
     #including below all app's urls
     path('accounts/', include('authentication.urls')),
     path('', include('uploader.urls')),
+    path('', include('count_api.urls')),
+    path('', include('query_builder.urls')),
     
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #adding media url
