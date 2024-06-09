@@ -9,6 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #including below all app's urls
     path('accounts/', include('authentication.urls')),
+    path('', include('uploader.urls')),
     
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #adding media url

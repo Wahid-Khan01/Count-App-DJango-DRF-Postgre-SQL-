@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig', # app banaya gaya authentication k naam se
     'allauth', #third party authentication allauth ko use karne k liye
     'allauth.account', # same as above line
-
+    'uploader.apps.UploaderConfig', # app banaya gaya uploader k naam se
 ]
 
 MIDDLEWARE = [

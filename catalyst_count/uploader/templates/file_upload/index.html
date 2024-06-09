@@ -1,0 +1,205 @@
+{% extends 'file_upload/base.html' %}
+{% load static %}
+{% block title %}
+    
+Catalyst File Uploader
+{% endblock title %}
+
+{% block css %}
+    
+    <style>
+        #myProgress {
+            width: 100%;
+        }
+
+        #uploaded_files {
+            margin-top: 25px;
+            display: flex;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        .file-icon i {
+            font-size: 60px;
+            color: rgb(0, 0, 0);
+        }
+
+        .file-details {
+            margin-top: -2px;
+            padding-left: 10px;
+            width: 100%;
+        }
+
+        .file-details p {
+            margin-bottom: -7px;
+        }
+
+        small {
+            margin-top: 0;
+            color: black;
+        }
+    </style>
+{% endblock css %}
+{% block content %}
+    
+    <div class="col-lg-6 col-md-6" style="margin: 0 auto; display: block; margin-top: 100px;">
+        <form enctype="multipart/form-data" method="POST" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Select file to upload.</label>
+                <input type="file" class="form-control" id="fileupload" placeholder="Select file" name="file">
+            </div>
+            <input type="submit" value="Upload" id="submit" class="btn btn-primary">
+        </form>
+        <div id="uploaded_files"></div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+
+        // oop approach use kar rahe hai yaha
+        class FileUpload {
+            constructor(input) {
+                this.input = input; 
+                this.max_length = 1024 * 1024 * 10; // 10 mb me chunk divide hongey
+            }
+
+            // yaha ham progress baar bana kar ek dive daalengey jissey visual progress show hoga user ko
+            create_progress_bar() {
+                var progress = `<div class="file-icon">
+                                    <i class="fa fa-file-o" aria-hidden="true"></i>
+                                </div>
+                                <div class="file-details">
+                                    <p class="filename"></p>
+                                    <small class="textbox"></small>
+                                    <div class="progress" style="margin-top: 5px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                                        </div>
+                                    </div>
+                                </div>`;
+                document.getElementById('uploaded_files').innerHTML = progress;
+            }
+
+
+            // upload function ko call karke ham progress bar create karengey or file upload ko initialize karengey
+            upload() {
+                this.create_progress_bar();
+                this.initFileUpload();
+            }
+
+            initFileUpload() {
+                this.file = this.input.files[0]; //upload file ko this.file properrty me assign karengey
+                this.upload_file(0, ''); // chunks me upload karne k liye method initialize karengey jiska start file ka starting byte hoga or second parameter empty hai q ki abhi file ka koi server side path nahi hai
+            }
+
+            //files ko chnks me upload karengey
+            upload_file(start, path) {
+                var end; //yeh batayega ki upload complete hua hai ya nahi
+                var self = this; 
+                var existingPath = path;
+                var formData = new FormData(); //yeh file data k send karne k liye form data object banaye hai
+                var nextChunk = start + this.max_length + 1; //har chunk baad agla chunka kaha se shuru hoga yeh nextChunk me store kiye hai
+                var currentChunk = this.file.slice(start, nextChunk); //chunks ko kaata jaayega 
+                var uploadedChunk = start + currentChunk.size; // katey hue chunks ko upload karne k liye store kiya jaara hau
+                if (uploadedChunk >= this.file.size) {
+                    end = 1; //chunk ka size agar file se bada ya equal hua toh upload complete true hoga nahi toh false
+                } else {
+                    end = 0;
+                }
+                formData.append('file', currentChunk); // current chunkk ko add karega file me
+                // formData.append('file',this.file, this.file.name);
+                formData.append('end', end); // batayega ki upload complete hua ya nahi
+                formData.append('existingPath', existingPath); //file ka server pe path batayega
+                formData.append('nextSlice', nextChunk); // agla chunk add hoga 
+                $('.filename').text(this.file.name); //user ko file name dikhaane k liye 
+                $('.textbox').text(""); // complete honey pe user ko msg dikhane k liye
+                $.ajaxSetup({
+                    headers: {
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    }
+                }); //yeh line ensure karti hai k har ajax ost request k sath correct csrf token bheja jaaye
+                $.ajax({
+                    xhr: function () {
+                        var xhr = new XMLHttpRequest(); //file upload progress ko track karne k liye custom XMLHttpResponse object create kiya gay
+                        xhr.upload.addEventListener('progress', function (e) { //monitor larega upload progress ko
+                            if (e.lengthComputable) { //ensure karega ki progress information available hai ya nahi
+                                var percent; //calculator of progress 
+                                if (self.file.size < self.max_length) { //agar max_length se file size chota hai ya bada
+                                    percent = Math.round((e.loaded / e.total) * 100); //uploaded bites/total bytes *100 or nearby integer se round off karenegy
+                                } else {
+                                    percent = Math.round((uploadedChunk / self.file.size) * 100);
+                                } //badi hai max_length se jo uper hamne10mb diya hai toh aise percentage calculate hoga
+                                $('.progress-bar').css('width', percent + '%');
+                                $('.progress-bar').text(percent + '%');
+                            } //visual progress batayega
+                        });
+                        return xhr;
+                    },
+                        url: '', //request kis endpoint se hogi
+                        type: 'POST',
+                        dataType: 'json',
+                        cache: false, //har request me fresh data mile
+                        processData: false, //data ko raw form me server pe bhejne k liey
+                        contentType: false, //content type automatic set na ho taaki ham multipart/form-data set kar sake manually
+                        data: formData, //server ko file chunk bhejne k liye
+                        error: function (xhr) {
+                            alert(xhr.statusText);
+                        }, // agar request fail ho toh uske liye alert msg
+                        success: function (res) {
+                            if (nextChunk < self.file.size) {
+                                // upload file in chunks
+                                self.upload_file(nextChunk, existingPath);
+                            } else {
+                                // upload complete
+                                $('.textbox').text(res.data);
+                                alert(res.data);
+                            }
+                        }
+                    }); // upload success hone pe check karega size jissey pata chalega ki or data hai ya nahi bacha hai toh agla chunk bhejega or complete honey pe alert me complete msg dedega
+                }
+
+        }
+//issey upload trigger hoga
+        (function ($) {
+            $('#submit').on('click', (event) => {
+                event.preventDefault(); //default form submission ko prevent karega 
+                var uploader = new FileUpload(document.querySelector('#fileupload')); //Fileuplaod ka ek naya object banake store karta hi
+                uploader.upload(); //uploader function call karta hai
+            });
+        })(jQuery);
+
+
+        //iske neechey drag and drop ka use kiya gaya hai taaki ham future me iska use kar sakey abhi isme kaam baaki hai
+        ondragenter = function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        };
+
+        ondragover = function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        };
+
+        ondragleave = function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+        };
+
+        ondrop = function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            const files = evt.originalEvent.dataTransfer;
+            var uploader = new FileUpload(files);
+            uploader.upload();
+        };
+
+        $('#dropBox')
+            .on('dragover', ondragover)
+            .on('dragenter', ondragenter)
+            .on('dragleave', ondragleave)
+            .on('drop', ondrop);
+    </script>
+{% endblock content %}
+
+
