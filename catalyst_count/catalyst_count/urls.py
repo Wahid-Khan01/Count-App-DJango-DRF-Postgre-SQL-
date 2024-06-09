@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include('uploader.urls')),
     path('', include('count_api.urls')),
     path('', include('query_builder.urls')),
+    path('', include('user_management.urls')),
     
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #adding media url

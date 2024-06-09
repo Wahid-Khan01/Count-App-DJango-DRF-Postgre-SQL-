@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework', #django k rest framework ko use karne k liye
     'count_api.apps.CountApiConfig', #count_api app banaya gaya 
     'query_builder.apps.QueryBuilderConfig', #query build k naam se app banaya gaya
+    'user_management.apps.UserManagementConfig' # user management k liye app banaya gaya
 
 
 ]   
