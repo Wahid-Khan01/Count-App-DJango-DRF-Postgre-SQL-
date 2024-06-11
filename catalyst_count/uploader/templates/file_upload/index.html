@@ -40,6 +40,13 @@ Catalyst File Uploader
             margin-top: 0;
             color: black;
         }
+        .progress {
+        margin-top: 10px;
+    }
+
+    .progress-bar {
+        transition: width 0.4s;
+    }
     </style>
 {% endblock css %}
 {% block content %}
@@ -55,6 +62,10 @@ Catalyst File Uploader
         </form>
         <div id="uploaded_files"></div>
     </div>
+
+
+    {% block js %}
+        
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script>
 
@@ -200,6 +211,7 @@ Catalyst File Uploader
             .on('dragleave', ondragleave)
             .on('drop', ondrop);
     </script>
+{% endblock js %}
 {% endblock content %}
 
 
